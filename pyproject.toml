@@ -1,0 +1,64 @@
+[project]
+name = "edf-fusion"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+keywords = ["edf", "fusion", "framework", "library"]
+description = "Fusion Framework Library"
+requires-python = ">=3.12"
+dynamic = ["version"]
+authors = [
+  { name="CERT-EDF", email="cert@edf.fr" },
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Utilities",
+    "Topic :: Security",
+]
+dependencies = [
+    "rich~=14.1",
+    "pyyaml~=6.0",
+    "aiofile~=3.9",
+    "aiohttp~=3.11",
+    "aiohttp-sse~=2.2",
+    "aiohttp-session[secure]~=2.12",
+]
+
+
+[project.optional-dependencies]
+auth_basic = ["argon2-cffi~=23.1"]
+auth_keycloak = ["python-keycloak~=4.7"]
+
+
+[project.urls]
+"Homepage" = "https://github.com/cert-edf/fusion"
+"Repository" = "https://github.com/cert-edf/fusion"
+"Bug Tracker" = "https://github.com/cert-edf/fusion/issues"
+
+
+[build-system]
+requires = ["setuptools>=78", "setuptools_scm>=8.2", "wheel"]
+build-backend = "setuptools.build_meta"
+
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["edf_fusion", "edf_fusion.*"]
+
+
+[tool.setuptools_scm]
+version_file = "edf_fusion/__version__.py"
+
+
+[tool.black]
+line-length = 79
+skip-string-normalization = true
+
+
+[tool.isort]
+profile = "black"
+line_length = 79
