@@ -83,13 +83,25 @@ class FusionEventAPI:
         case = await fusion_storage.retrieve_case(case_guid)
         if not case_guid:
             raise HTTPBadRequest(reason="Failed to retrieve case from GUID")
-        ext = {'username': identity.username}
-        await self.notify(category='subscribe', case=case, ext=ext)
         channel = case_pubsub_channel(case)
-        response = await pubsub_sse_response(
-            request, self._pubsub, identity.username, channel
+        await self.notify(
+            category='subscribe',
+            case=case,
+            ext={'username': identity.username},
         )
-        await self.notify(category='unsubscribe', case=case, ext=ext)
+        usernames = list(self.subscribers(case))
+        if identity.username not in usernames:
+            usernames.append(identity.username)
+        ext = {"usernames": usernames}
+        events = [self.event_cls(category='subscribers', case=case, ext=ext)]
+        response = await pubsub_sse_response(
+            request, self._pubsub, identity.username, channel, events
+        )
+        await self.notify(
+            category='unsubscribe',
+            case=case,
+            ext={"username": identity.username},
+        )
         return response
 
     def subscribers(self, case: Case) -> set[str]:

@@ -14,10 +14,10 @@ from aiohttp.web import Request, Response, StreamResponse
 from aiohttp.web import json_response as _json_response
 from aiohttp_sse import sse_response
 
-from ..concept import Concept, ConceptType
+from ..concept import Concept, ConceptType, Event
 from .logging import get_logger
 from .pubsub import PubSub
-from .serializing import load_json
+from .serializing import dump_json, load_json
 from .streaming import DEFAULT_CHUNK_SIZE
 
 Data = dict | list | str | None
@@ -120,13 +120,17 @@ async def pubsub_sse_response(
     pubsub: PubSub,
     client_guid: str,
     channel: str | None = None,
+    events: list[Event] | None = None,
 ) -> StreamResponse:
     """Pubsub-based SSE response"""
     async with sse_response(request) as response:
         try:
-            while response.is_connected():
-                async for data in pubsub.subscribe(client_guid, channel):
-                    await response.send(data)
+            for event in events:
+                await response.send(dump_json(event.to_dict()))
+            async for data in pubsub.subscribe(client_guid, channel):
+                if not response.is_connected():
+                    break
+                await response.send(data)
         finally:
             pubsub.unsubscribe(client_guid)
         return response
